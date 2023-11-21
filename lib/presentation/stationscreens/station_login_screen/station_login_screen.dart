@@ -159,7 +159,7 @@ class _StationLoginScreen extends State<StationLoginScreen> {
       }
     } catch (e) {
       // Handle login errors, e.g., display an error message
-
+      print('Error logging in: $e');
       setState(() {
         errorMessage = e.toString();
       });
