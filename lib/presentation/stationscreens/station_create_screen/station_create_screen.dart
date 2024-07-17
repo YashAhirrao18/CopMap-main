@@ -1,7 +1,78 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:yash_s_application3/features/firestore_services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+class CustomMarker {
+  final String markerId;
+  final double latitude;
+  final double longitude;
+  final String placeName;
+  List<String>? assignedOfficers;
+
+  CustomMarker({
+    required this.markerId,
+    required this.latitude,
+    required this.longitude,
+    required this.placeName,
+    this.assignedOfficers,
+  });
+}
+
+class OfficerList extends StatefulWidget {
+  final List<DocumentSnapshot> officers;
+  final Function(String) onOfficerTap;
+
+  OfficerList({required this.officers, required this.onOfficerTap});
+
+  @override
+  _OfficerListState createState() => _OfficerListState();
+}
+
+class _OfficerListState extends State<OfficerList> {
+  List<bool> officerSelection = [];
+
+  @override
+  void initState() {
+    super.initState();
+    officerSelection = List.generate(widget.officers.length, (index) => false);
+  }
+
+  @override
+  void didUpdateWidget(covariant OfficerList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    officerSelection = List.generate(widget.officers.length, (index) => false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      itemCount: widget.officers.length,
+      itemBuilder: (context, index) {
+        final officerData =
+            widget.officers[index].data() as Map<String, dynamic>;
+
+        final name = officerData['name'] ?? 'Unknown';
+        final rank = officerData['rank'] ?? 'Unknown';
+        final dgp = officerData['dgp'] ?? 'Unknown';
+        final station = officerData['station'] ?? 'Unknown';
+
+        return ListTile(
+          title: Text(name),
+          subtitle: Text(
+            'Rank: $rank\nDGP: $dgp\nStation: $station',
+          ),
+          tileColor: officerSelection[index] ? Colors.grey : null,
+          onTap: () {
+            setState(() {
+              officerSelection[index] = !officerSelection[index];
+              widget.onOfficerTap(officerData['dgp']);
+            });
+          },
+        );
+      },
+    );
+  }
+}
 
 class StationCreateScreen extends StatefulWidget {
   @override
@@ -10,13 +81,127 @@ class StationCreateScreen extends StatefulWidget {
 
 class _StationCreateScreenState extends State<StationCreateScreen> {
   late Future<List<DocumentSnapshot>> officers;
-  // Add a controller for the Google Map
-  GoogleMapController? mapController;
+  Map<String, CustomMarker> markers = {};
+  CustomMarker? selectedMarker;
+  List<String> selectedOfficers = [];
+  GoogleMapController? _mapController;
 
   @override
   void initState() {
     super.initState();
     officers = fetchOfficers();
+  }
+
+  Future<void> _onMapTap(LatLng latLng) async {
+    String? placeName = await _showPlaceNameDialog();
+
+    if (placeName != null && placeName.isNotEmpty) {
+      String markerId = latLng.toString();
+      print('Marker created: $markerId, Place Name: $placeName');
+
+      setState(() {
+        markers[markerId] = CustomMarker(
+          markerId: markerId,
+          latitude: latLng.latitude,
+          longitude: latLng.longitude,
+          placeName: placeName,
+        );
+      });
+    }
+  }
+
+  Future<String?> _showPlaceNameDialog() async {
+    TextEditingController controller = TextEditingController();
+    return showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Enter Place Name'),
+          content: TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              hintText: 'Place Name',
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(controller.text);
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showDateTimePickerDialog() async {
+    DateTime? selectedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(Duration(days: 365)),
+    );
+
+    if (selectedDate != null) {
+      TimeOfDay? selectedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+      );
+
+      if (selectedTime != null) {
+        String dateTimeString =
+            '${selectedDate.toLocal()} ${selectedTime.format(context)}';
+        print('Selected Date and Time: $dateTimeString');
+        _confirmBandobast(dateTimeString);
+        _processSelectedDateTime(dateTimeString);
+      }
+    }
+  }
+
+  void _processSelectedDateTime(String dateTimeString) {
+    print('Processing Date and Time: $dateTimeString');
+  }
+
+  void _onOfficerTap(String officerId) {
+    setState(() {
+      if (selectedOfficers.contains(officerId)) {
+        selectedOfficers.remove(officerId);
+      } else {
+        selectedOfficers.add(officerId);
+      }
+    });
+  }
+
+  Future<void> _confirmBandobast(String dateTimeString) async {
+    if (markers.isNotEmpty) {
+      // Create a new document in the 'bandobast' collection
+      DocumentReference bandobastReference =
+          await FirebaseFirestore.instance.collection('bandobast').add({
+        'dateTime': dateTimeString,
+        'markers': markers.values
+            .map((marker) => {
+                  'latitude': marker.latitude,
+                  'longitude': marker.longitude,
+                  'placeName': marker.placeName,
+                  'assignedOfficers': marker.assignedOfficers ?? [],
+                })
+            .toList(),
+        'assignedOfficers': selectedOfficers,
+      });
+
+      print('Bandobast confirmed! Document ID: ${bandobastReference.id}');
+
+      // Clear the local markers after confirming the bandobast
+      setState(() {
+        markers.clear();
+        selectedMarker = null;
+        selectedOfficers.clear();
+      });
+    } else {
+      print('No markers to confirm in the bandobast.');
+    }
   }
 
   @override
@@ -29,22 +214,31 @@ class _StationCreateScreenState extends State<StationCreateScreen> {
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          // Top portion: Google Maps API taking more than half of the screen
           Expanded(
             flex: 1,
             child: GoogleMap(
               onMapCreated: (controller) {
-                // Set the controller when the map is created
-                mapController = controller;
+                _mapController = controller;
               },
               initialCameraPosition: CameraPosition(
-                target: LatLng(20.9025,
-                    74.7749), // Latitude and Longitude of Dhule, Maharashtra, India
+                target: LatLng(20.9025, 74.7749),
                 zoom: 10.0,
               ),
+              onTap: _onMapTap,
+              markers: markers.values.map((marker) {
+                return Marker(
+                  markerId: MarkerId(marker.markerId),
+                  position: LatLng(marker.latitude, marker.longitude),
+                  onTap: () {
+                    setState(() {
+                      selectedMarker = marker;
+                      print('Selected Marker: ${selectedMarker?.markerId}');
+                    });
+                  },
+                );
+              }).toSet(),
             ),
           ),
-          // Bottom portion: Search bar and user information
           Expanded(
             flex: 1,
             child: Container(
@@ -52,15 +246,12 @@ class _StationCreateScreenState extends State<StationCreateScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Search bar
                   TextField(
                     decoration: InputDecoration(
                       hintText: 'Search...',
-                      // You can customize the search bar further as needed
                     ),
                   ),
                   SizedBox(height: 16.0),
-                  // User information
                   Text(
                     'User Information',
                     style: TextStyle(
@@ -68,7 +259,6 @@ class _StationCreateScreenState extends State<StationCreateScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  // FutureBuilder for displaying officers
                   Expanded(
                     child: FutureBuilder<List<DocumentSnapshot>>(
                       future: officers,
@@ -86,7 +276,6 @@ class _StationCreateScreenState extends State<StationCreateScreen> {
                               final officerData = officerDocuments[index].data()
                                   as Map<String, dynamic>;
 
-                              // Null-checks for officer data
                               final name = officerData['name'] ?? 'Unknown';
                               final rank = officerData['rank'] ?? 'Unknown';
                               final dgp = officerData['dgp'] ?? 'Unknown';
@@ -96,10 +285,13 @@ class _StationCreateScreenState extends State<StationCreateScreen> {
                               return ListTile(
                                 title: Text(name),
                                 subtitle: Text(
-                                    'Rank: $rank\nDGP: $dgp\nStation: $station'),
+                                  'Rank: $rank\nDGP: $dgp\nStation: $station',
+                                ),
+                                tileColor: selectedOfficers.contains(dgp)
+                                    ? Colors.grey
+                                    : null,
                                 onTap: () {
-                                  // Handle officer selection here
-                                  // You can use the selected officer's data as needed
+                                  _onOfficerTap(officerData['dgp']);
                                 },
                               );
                             },
@@ -108,6 +300,33 @@ class _StationCreateScreenState extends State<StationCreateScreen> {
                       },
                     ),
                   ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      if (selectedMarker != null &&
+                          selectedOfficers.isNotEmpty) {
+                        setState(() {
+                          markers[selectedMarker!.markerId]
+                              ?.assignedOfficers ??= [];
+                          markers[selectedMarker!.markerId]
+                              ?.assignedOfficers
+                              ?.addAll(selectedOfficers);
+                          print(
+                              'Officers linked to marker: ${selectedMarker!.markerId}');
+                        });
+                      }
+                    },
+                    child: Text('Link Officer to Marker'),
+                  ),
+                  SizedBox(height: 8.0),
+                  ElevatedButton(
+                    onPressed: () async {
+                      if (selectedMarker != null &&
+                          selectedOfficers.isNotEmpty) {
+                        _showDateTimePickerDialog();
+                      }
+                    },
+                    child: Text('Confirm Bandobast'),
+                  ),
                 ],
               ),
             ),
@@ -115,5 +334,16 @@ class _StationCreateScreenState extends State<StationCreateScreen> {
         ],
       ),
     );
+  }
+}
+
+Future<List<DocumentSnapshot>> fetchOfficers() async {
+  try {
+    QuerySnapshot querySnapshot =
+        await FirebaseFirestore.instance.collection('Officers').get();
+    return querySnapshot.docs;
+  } catch (error) {
+    print('Error fetching officers: $error');
+    return [];
   }
 }

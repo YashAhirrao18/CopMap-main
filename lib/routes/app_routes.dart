@@ -16,6 +16,7 @@ import 'package:yash_s_application3/presentation/ambulance_screen/ambulance_scre
 import 'package:yash_s_application3/presentation/schedule_tab_container_screen/schedule_tab_container_screen.dart';
 import 'package:yash_s_application3/presentation/message_tab_container_screen/message_tab_container_screen.dart';
 import 'package:yash_s_application3/presentation/app_navigation_screen/app_navigation_screen.dart';
+import 'package:yash_s_application3/presentation/view_bandobast/view_bandobast.dart';
 
 //imports for all the station related
 import 'package:yash_s_application3/presentation/stationscreens/station_login_screen/station_login_screen.dart';
@@ -62,6 +63,8 @@ class AppRoutes {
       '/message_tab_container_screen';
 
   static const String appNavigationScreen = '/app_navigation_screen';
+  static const String viewBandobastScreen = '/view_bandobast';
+
   //app routes for station related
 
   static const String stationLoginScreen = '/station_login_screen';
@@ -86,6 +89,8 @@ class AppRoutes {
     scheduleTabContainerScreen: (context) => ScheduleTabContainerScreen(),
     messageTabContainerScreen: (context) => MessageTabContainerScreen(),
     appNavigationScreen: (context) => AppNavigationScreen(),
+    viewBandobastScreen: (context) => ViewBandobastScreen(),
+
     //station related routes
     stationDashboardScreen: (context) => StationDashboardScreen(),
     stationLoginScreen: (context) => StationLoginScreen(),

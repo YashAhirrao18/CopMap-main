@@ -78,7 +78,7 @@ class ScheduleItemWidget extends StatelessWidget {
                 Padding(
                   padding: EdgeInsets.only(left: 5.h),
                   child: Text(
-                    "26/06/2021",
+                    "26/06/2023",
                     style: CustomTextStyles.labelLargeOnPrimary,
                   ),
                 ),
@@ -137,7 +137,7 @@ class ScheduleItemWidget extends StatelessWidget {
               ),
               Expanded(
                 child: CustomElevatedButton(
-                  text: "Reschedule",
+                  text: "View",
                   margin: EdgeInsets.only(left: 7.h),
                   onPressed: () {
                     onTapRecentOrders!.call();

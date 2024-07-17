@@ -114,11 +114,15 @@ class DashboardScreen extends StatelessWidget {
                           .copyWith(height: 1.50))),
               SizedBox(height: 7.v),
               CustomElevatedButton(
-                  height: 26.v,
-                  width: 106.h,
-                  text: "Learn More",
-                  buttonStyle: CustomButtonStyles.fillCyan,
-                  buttonTextStyle: CustomTextStyles.labelLargePrimarySemiBold)
+                height: 26.v,
+                width: 106.h,
+                text: "Learn More",
+                buttonStyle: CustomButtonStyles.fillCyan,
+                buttonTextStyle: CustomTextStyles.labelLargePrimarySemiBold,
+                onPressed: () {
+                  print("Learn More button clicked"); // Debugging statement
+                },
+              )
             ]));
   }
 

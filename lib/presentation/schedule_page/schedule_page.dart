@@ -58,6 +58,6 @@ class SchedulePageState extends State<SchedulePage>
 
   /// Navigates to the signupScreen when the action is triggered.
   onTapRecentOrders(BuildContext context) {
-    Navigator.pushNamed(context, AppRoutes.signupScreen);
+    Navigator.pushNamed(context, AppRoutes.viewBandobastScreen);
   }
 }

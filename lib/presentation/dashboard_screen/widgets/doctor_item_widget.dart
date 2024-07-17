@@ -37,7 +37,7 @@ class DoctorItemWidget extends StatelessWidget {
               children: [
                 SizedBox(height: 8.v),
                 CustomImageView(
-                  imagePath: 'assets/images/bajirao_singham.jpeg',
+                  imagePath: 'assets/images/Yathish N IPS.png',
                   height: 68.adaptSize,
                   width: 68.adaptSize,
                   radius: BorderRadius.circular(
@@ -49,7 +49,7 @@ class DoctorItemWidget extends StatelessWidget {
                 Padding(
                   padding: EdgeInsets.only(left: 1.h),
                   child: Text(
-                    "Bajirao Singham",
+                    "Rajesh Reddy",
                     style: CustomTextStyles.labelLargeOnPrimarySemiBold,
                   ),
                 ),
@@ -79,7 +79,7 @@ class DoctorItemWidget extends StatelessWidget {
                           bottom: 1.v,
                         ),
                         child: Text(
-                          "4,7",
+                          "4.7",
                           style: CustomTextStyles.labelSmallCyan300,
                         ),
                       ),

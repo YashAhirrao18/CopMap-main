@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class FirestoreService {
   final CollectionReference officersCollection =
@@ -16,6 +17,11 @@ class FirestoreService {
     required String selectedPoliceStation,
   }) async {
     try {
+      UserCredential userCredential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
       await officersCollection.doc(dgpNumber).set({
         'dgp': dgpNumber,
         'email': email,

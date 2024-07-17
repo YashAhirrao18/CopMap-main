@@ -91,35 +91,39 @@ class StationDashboardScreen extends StatelessWidget {
             }));
   }
 
-  /// Section Widget
   Widget _buildOfferBanner(BuildContext context) {
     return Container(
-        width: 335.h,
-        margin: EdgeInsets.only(right: 20.h),
-        padding: EdgeInsets.symmetric(horizontal: 26.h, vertical: 12.v),
-        decoration: AppDecoration.fillTeal
-            .copyWith(borderRadius: BorderRadiusStyle.roundedBorder10),
-        child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(height: 4.v),
-              SizedBox(
-                  width: 168.h,
-                  child: Text("Check your last bandobast",
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: CustomTextStyles.titleMedium18
-                          .copyWith(height: 1.50))),
-              SizedBox(height: 7.v),
-              CustomElevatedButton(
-                  height: 26.v,
-                  width: 106.h,
-                  text: "Learn More",
-                  buttonStyle: CustomButtonStyles.fillCyan,
-                  buttonTextStyle: CustomTextStyles.labelLargePrimarySemiBold)
-            ]));
+      width: 335.h,
+      margin: EdgeInsets.only(right: 20.h),
+      padding: EdgeInsets.symmetric(horizontal: 26.h, vertical: 12.v),
+      decoration: AppDecoration.fillTeal
+          .copyWith(borderRadius: BorderRadiusStyle.roundedBorder10),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(height: 4.v),
+          SizedBox(
+            width: 168.h,
+            child: Text(
+              "Check your last bandobast",
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: CustomTextStyles.titleMedium18.copyWith(height: 1.50),
+            ),
+          ),
+          SizedBox(height: 7.v),
+          CustomElevatedButton(
+            height: 26.v,
+            width: 106.h,
+            text: "Learn More",
+            buttonStyle: CustomButtonStyles.fillCyan,
+            buttonTextStyle: CustomTextStyles.labelLargePrimarySemiBold,
+          ),
+        ],
+      ),
+    );
   }
 
   /// Section Widget
