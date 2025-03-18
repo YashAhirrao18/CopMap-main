@@ -237,10 +237,9 @@ class StationDashboardScreen extends StatelessWidget {
   }
 
   /// Section Widget
-  /// Section Widget
   Widget _buildBottomBar(BuildContext context) {
     return StationCustomBottomBar(onChanged: (BottomBarEnum type) {
-      Navigator.of(context).pushNamed(
+      Navigator.of(context).pushReplacementNamed(
         getCurrentRoute(type),
       );
     });
